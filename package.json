@@ -1,5 +1,5 @@
 {
-  "name": "@faststore/core",
+  "name": "@yibarra/faststore-core",
   "version": "0.0.1",
   "license": "MIT",
   "repository": "vtex/faststore",
@@ -85,8 +85,7 @@
     "sharp": "^0.32.6",
     "style-loader": "^3.3.1",
     "swr": "^2.2.5",
-    "tsx": "^4.6.2",
-    "@soma-vertical-web/foundations": "^0.0.12"
+    "tsx": "^4.6.2"
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.12.1",
