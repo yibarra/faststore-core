@@ -1,0 +1,2364 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+directive @cacheControl(sMaxAge: Int, staleWhileRevalidate: Int, scope: String) on FIELD_DEFINITION
+
+"""Address information."""
+type Address {
+  """Address postal code"""
+  postalCode: String
+  """Address city"""
+  city: String
+  """Address state"""
+  state: String
+  """Address country"""
+  country: String
+  """Address street"""
+  street: String
+  """Address number"""
+  number: String
+  """Address neighborhood"""
+  neighborhood: String
+  """Address complement"""
+  complement: String
+  """Address reference"""
+  reference: String
+  """Address geoCoordinates"""
+  geoCoordinates: [Float]
+}
+
+"""Advertisement information about a specific product in a campaign"""
+type Advertisement {
+  """Advertiser ID of the product."""
+  adId: String!
+  """Campaign ID."""
+  campaignId: String!
+  """Cost of the action, usually Cost Per Click."""
+  actionCost: Float!
+  """Advertiser Request ID."""
+  adRequestId: String!
+  """Advertiser Response ID."""
+  adResponseId: String!
+}
+
+"""Aggregate offer information, for a given SKU that is available to be fulfilled by multiple sellers."""
+type StoreAggregateOffer {
+  """Highest price among all sellers."""
+  highPrice: Float!
+  """Lowest price among all sellers."""
+  lowPrice: Float!
+  """Lowest price among all sellers with current taxes."""
+  lowPriceWithTaxes: Float!
+  """Number of sellers selling this SKU."""
+  offerCount: Int!
+  """ISO code of the currency used for the offer prices."""
+  priceCurrency: String!
+  """Array with information on each available offer."""
+  offers: [StoreOffer!]!
+}
+
+"""Average rating, based on multiple ratings or reviews."""
+type StoreAggregateRating {
+  """Value of the aggregate rating."""
+  ratingValue: Float!
+  """Total number of ratings."""
+  reviewCount: Int!
+}
+
+"""information about the author of a product review or rating."""
+type StoreAuthor {
+  """Author name."""
+  name: String!
+}
+
+"""Brand of a given product."""
+type StoreBrand {
+  """Brand name."""
+  name: String!
+}
+
+"""Item of a list."""
+type StoreListItem {
+  """List item value."""
+  item: String!
+  """Name of the list item."""
+  name: String!
+  """Position of the item in the list."""
+  position: Int!
+}
+
+"""List of items consisting of chain linked web pages, ending with the current page."""
+type StoreBreadcrumbList {
+  """Array with breadcrumb elements."""
+  itemListElement: [StoreListItem!]!
+  """Number of breadcrumbs in the list."""
+  numberOfItems: Int!
+}
+
+"""Shopping cart message."""
+type StoreCartMessage {
+  """Shopping cart message text."""
+  text: String!
+  """Shopping cart message status, which can be `INFO`, `WARNING` or `ERROR`."""
+  status: StoreStatus!
+}
+
+"""Shopping cart information."""
+type StoreCart {
+  """Order information, including `orderNumber`, `acceptedOffer` and `shouldSplitItem`."""
+  order: StoreOrder!
+  """List of shopping cart messages."""
+  messages: [StoreCartMessage!]!
+}
+
+"""Shopping cart input."""
+input IStoreCart {
+  """Order information, including `orderNumber`, `acceptedOffer` and `shouldSplitItem`."""
+  order: IStoreOrder!
+}
+
+"""Product collection type. Possible values are `Department`, `Category`, `Brand`, `Cluster`, `SubCategory` or `Collection`."""
+enum StoreCollectionType {
+  """First level of product categorization."""
+  Department
+  """Second level of product categorization."""
+  Category
+  """Third level of product categorization."""
+  SubCategory
+  """Product brand."""
+  Brand
+  """Product cluster."""
+  Cluster
+  """Product collection."""
+  Collection
+}
+
+"""Product collection facet, used for search."""
+type StoreCollectionFacet {
+  """Facet key."""
+  key: String!
+  """Facet value."""
+  value: String!
+}
+
+"""Collection meta information. Used for search."""
+type StoreCollectionMeta {
+  """List of selected collection facets."""
+  selectedFacets: [StoreCollectionFacet!]!
+}
+
+"""Product collection information."""
+type StoreCollection {
+  """Meta tag data."""
+  seo: StoreSeo!
+  """List of items consisting of chain linked web pages, ending with the current page."""
+  breadcrumbList: StoreBreadcrumbList!
+  """Collection meta information. Used for search."""
+  meta: StoreCollectionMeta!
+  """Collection ID."""
+  id: ID!
+  """Corresponding collection URL slug, with which to retrieve this entity."""
+  slug: String!
+  """Collection type."""
+  type: StoreCollectionType!
+}
+
+"""Delivery Promise badge."""
+type DeliveryPromiseBadge {
+  """Badge type."""
+  typeName: String
+}
+
+union StoreFacet = StoreFacetRange | StoreFacetBoolean
+
+"""Search facet range information."""
+type StoreFacetRange {
+  """Facet key."""
+  key: String!
+  """Facet label."""
+  label: String!
+  """Minimum facet range value."""
+  min: StoreFacetValueRange!
+  """Maximum facet range value."""
+  max: StoreFacetValueRange!
+}
+
+"""Search facet boolean information."""
+type StoreFacetBoolean {
+  """Facet key."""
+  key: String!
+  """Facet label."""
+  label: String!
+  """Array with information on each facet value."""
+  values: [StoreFacetValueBoolean!]!
+}
+
+"""Search facet range value information. Used for minimum and maximum range values."""
+type StoreFacetValueRange {
+  """Search facet range absolute value."""
+  absolute: Float!
+  """Search facet range selected value."""
+  selected: Float!
+}
+
+"""Information of a specific facet value."""
+type StoreFacetValueBoolean {
+  """Facet value."""
+  value: String!
+  """Facet value label."""
+  label: String!
+  """Indicates whether facet is selected."""
+  selected: Boolean!
+  """Number of items with this facet."""
+  quantity: Int!
+}
+
+"""Image."""
+type StoreImage {
+  """Image URL."""
+  url: String!
+  """Alias for the image."""
+  alternateName: String!
+}
+
+"""Image input."""
+input IStoreImage {
+  """Image input URL."""
+  url: String!
+  """Alias for the input image."""
+  alternateName: String!
+}
+
+type Mutation {
+  """Checks for changes between the cart presented in the UI and the cart stored in the ecommerce platform. If changes are detected, it returns the cart stored on the platform. Otherwise, it returns `null`."""
+  validateCart(cart: IStoreCart!, session: IStoreSession): StoreCart
+  """Updates a web session with the specified values."""
+  validateSession(session: IStoreSession!, search: String!): StoreSession
+  """Subscribes a new person to the newsletter list."""
+  subscribeToNewsletter(data: IPersonNewsletter!): PersonNewsletter
+  """Cancels user order"""
+  cancelOrder(data: IUserOrderCancel!): UserOrderCancel
+  """Process Order Authorization"""
+  processOrderAuthorization(data: IProcessOrderAuthorization!): ProcessOrderAuthorizationResponse
+}
+
+"""Newsletter information."""
+type PersonNewsletter {
+  """Person's ID in the newsletter list."""
+  id: String!
+}
+
+"""Person data input to the newsletter."""
+input IPersonNewsletter {
+  """Person's name."""
+  name: String!
+  """Person's email."""
+  email: String!
+}
+
+scalar ObjectOrString
+
+"""Offer information."""
+type StoreOffer {
+  """This is displayed as the "from" price in the context of promotions' price comparison. This may change before it reaches the shelf."""
+  listPrice: Float!
+  """List price among with current taxes."""
+  listPriceWithTaxes: Float!
+  """Computed price before applying coupons, taxes or benefits. This may change before it reaches the shelf."""
+  sellingPrice: Float!
+  """ISO code of the currency used for the offer prices."""
+  priceCurrency: String!
+  """Also known as spot price."""
+  price: Float!
+  """Also known as spot price with taxes."""
+  priceWithTaxes: Float!
+  """Next date in which price is scheduled to change. If there is no scheduled change, this will be set a year in the future from current time."""
+  priceValidUntil: String!
+  """Offer item condition."""
+  itemCondition: String!
+  """Offer item availability."""
+  availability: String!
+  """Seller responsible for the offer."""
+  seller: StoreOrganization!
+  """Information on the item being offered."""
+  itemOffered: StoreProduct!
+  """Number of items offered."""
+  quantity: Int!
+}
+
+"""Offer input."""
+input IStoreOffer {
+  """Also known as spot price."""
+  price: Float!
+  """This is displayed as the "from" price in the context of promotions' price comparison. This may change before it reaches the shelf."""
+  listPrice: Float!
+  """Seller responsible for the offer."""
+  seller: IStoreOrganization!
+  """Information on the item being offered."""
+  itemOffered: IStoreProduct!
+  """Number of items offered."""
+  quantity: Int!
+}
+
+"""Information of a specific order."""
+type StoreOrder {
+  """ID of the order in [VTEX order management](https://help.vtex.com/en/tutorial/license-manager-resources-oms--60QcBsvWeum02cFi3GjBzg#)."""
+  orderNumber: String!
+  """Array with information on each accepted offer."""
+  acceptedOffer: [StoreOffer!]!
+  """Indicates whether or not items with attachments should be split."""
+  shouldSplitItem: Boolean
+}
+
+"""Order input."""
+input IStoreOrder {
+  """ID of the order in [VTEX order management](https://help.vtex.com/en/tutorial/license-manager-resources-oms--60QcBsvWeum02cFi3GjBzg#)."""
+  orderNumber: String!
+  """Array with information on each accepted offer."""
+  acceptedOffer: [IStoreOffer!]!
+  """Indicates whether or not items with attachments should be split."""
+  shouldSplitItem: Boolean
+}
+
+"""Commercial Authorization response."""
+type CommercialAuthorizationResponse {
+  """Commercial Authorization ID."""
+  id: String!
+  """Order ID associated with the commercial authorization."""
+  orderId: String!
+  """Workflow instance ID."""
+  workflowInstanceId: String!
+  """Current status of the commercial authorization."""
+  status: CommercialAuthorizationStatus!
+  """List of units."""
+  units: [String!]!
+  """Callback endpoint URL."""
+  callbackEndpoint: String!
+  """Total order value desired by the seller."""
+  totalOrderValueDesiredBySeller: Float!
+  """Marketplace payment value."""
+  marketPlacePaymentValue: Float!
+  """Collection of items in the commercial authorization."""
+  itemCollection: [CommercialAuthorizationItem!]!
+  """Additional information as key-value pairs."""
+  additionalInfo: JSONObject!
+  """Dimension status information."""
+  dimensionStatus: [CommercialAuthorizationDimensionStatus!]!
+  """Creation version."""
+  creationVersion: String!
+  """Creation environment."""
+  creationEnvironment: String!
+  """User profile ID."""
+  userProfileId: String!
+}
+
+"""Commercial Authorization status."""
+enum CommercialAuthorizationStatus {
+  """Authorization is pending."""
+  pending
+  """Authorization has been accepted."""
+  accepted
+  """Authorization has been denied."""
+  denied
+}
+
+"""Commercial Authorization item."""
+type CommercialAuthorizationItem {
+  """Item ID."""
+  id: String!
+  """Item SKU."""
+  sku: String!
+  """Item price."""
+  price: Float!
+  """Total system discount applied."""
+  totalSystemDiscount: Float!
+  """Total manual discount applied."""
+  totalManualDiscount: Float!
+  """Item quantity."""
+  quantity: Int!
+  """Additional information as key-value pairs."""
+  additionalInfo: JSONObject!
+}
+
+"""Commercial Authorization dimension status."""
+type CommercialAuthorizationDimensionStatus {
+  """Dimension status ID."""
+  id: String!
+  """Dimension status name."""
+  name: String!
+  """Unit ID, if applicable."""
+  unitId: String
+  """Current status of the dimension."""
+  status: CommercialAuthorizationStatus!
+  """Dimension score."""
+  score: Float!
+  """Priority level."""
+  priority: Int!
+  """Indicates if simulation should be performed."""
+  shouldSimulate: Boolean!
+  """Collection of rules for this dimension."""
+  ruleCollection: [CommercialAuthorizationRule!]!
+  """Creation date."""
+  creationDate: String!
+  """Creation version."""
+  creationVersion: String!
+  """Creation environment."""
+  creationEnvironment: String!
+  """Indicates if all rules acceptance is required."""
+  requireAllRulesAcceptance: Boolean!
+}
+
+"""Commercial Authorization rule."""
+type CommercialAuthorizationRule {
+  """Rule ID."""
+  id: String!
+  """Rule name."""
+  name: String!
+  """Current status of the rule."""
+  status: CommercialAuthorizationStatus!
+  """DO ID, if applicable."""
+  doId: String
+  """List of authorized email addresses."""
+  authorizedEmails: [String!]!
+  """Rule priority."""
+  priority: Int!
+  """Rule trigger configuration."""
+  trigger: CommercialAuthorizationRuleTrigger!
+  """Timeout value."""
+  timeout: Int!
+  """Indicates if notification is enabled."""
+  notification: Boolean!
+  """Score interval configuration."""
+  scoreInterval: CommercialAuthorizationRuleScoreInterval!
+  """Authorization data, if available."""
+  authorizationData: CommercialAuthorizationRuleAuthorizationData
+  """
+  Indicates that the user is listed as one of the possible approvers,
+  but does not necessarily mean that he or she is the next in the chain to approve.
+  """
+  isUserAuthorized: Boolean!
+  """
+  Indicates that the user is next in the approval chain.
+  This means that they must take an approval or rejection action.
+  """
+  isUserNextAuthorizer: Boolean!
+}
+
+"""Commercial Authorization rule trigger."""
+type CommercialAuthorizationRuleTrigger {
+  """Trigger condition."""
+  condition: CommercialAuthorizationRuleTriggerCondition!
+  """Trigger effect."""
+  effect: CommercialAuthorizationRuleTriggerEffect!
+}
+
+"""Commercial Authorization rule trigger condition."""
+type CommercialAuthorizationRuleTriggerCondition {
+  """Condition type."""
+  conditionType: Int!
+  """Condition description."""
+  description: String
+  """Less than value."""
+  lessThan: Float
+  """Greater than value."""
+  greatherThan: Float
+  """Condition expression."""
+  expression: String
+}
+
+"""Commercial Authorization rule trigger effect."""
+type CommercialAuthorizationRuleTriggerEffect {
+  """Effect description."""
+  description: String
+  """Effect type."""
+  effectType: Int!
+  """Function path."""
+  funcPath: String
+}
+
+"""Commercial Authorization rule score interval."""
+type CommercialAuthorizationRuleScoreInterval {
+  """Accept score threshold."""
+  accept: Float!
+  """Deny score threshold."""
+  deny: Float!
+}
+
+"""Commercial Authorization rule authorization data."""
+type CommercialAuthorizationRuleAuthorizationData {
+  """Indicates if all approvals are required."""
+  requireAllApprovals: Boolean!
+  """List of authorizers."""
+  authorizers: [CommercialAuthorizationRuleAuthorizer!]!
+}
+
+"""Commercial Authorization rule authorizer."""
+type CommercialAuthorizationRuleAuthorizer {
+  """Authorizer ID."""
+  id: String!
+  """Authorizer email."""
+  email: String
+  """Authorizer type."""
+  type: String!
+  """Authorization date."""
+  authorizationDate: String
+}
+
+"""Input to get commercial authorizations by order ID."""
+input ICommercialAuthorizationByOrderId {
+  """Order ID to get commercial authorizations for."""
+  orderId: String!
+}
+
+"""Input to process order authorization (approve or reject)."""
+input IProcessOrderAuthorization {
+  """Order authorization ID."""
+  orderAuthorizationId: String!
+  """Rule ID associated with the authorization."""
+  ruleId: String!
+  """Dimension ID associated with the authorization."""
+  dimensionId: String!
+  """Whether the authorization is approved (true) or rejected (false)."""
+  approved: Boolean!
+}
+
+"""Process Order Authorization response."""
+type ProcessOrderAuthorizationResponse {
+  """Indicates if authorization is pending for other authorizers."""
+  isPendingForOtherAuthorizer: Boolean!
+  """The updated rule for authorization, if any."""
+  ruleForAuthorization: ProcessOrderAuthorizationRule
+}
+
+"""Extended Commercial Authorization rule with additional process context."""
+type ProcessOrderAuthorizationRule {
+  """Order authorization ID."""
+  orderAuthorizationId: String!
+  """Dimension ID."""
+  dimensionId: String!
+  """Base rule information."""
+  rule: CommercialAuthorizationRule!
+}
+
+"""Organization."""
+type StoreOrganization {
+  """Organization ID."""
+  identifier: String!
+}
+
+"""Organization input."""
+input IStoreOrganization {
+  """Organization ID."""
+  identifier: String!
+}
+
+"""Whenever you make a query that allows for pagination, such as `allProducts` or `allCollections`, you can check `StorePageInfo` to learn more about the complete set of items and use it to paginate your queries."""
+type StorePageInfo {
+  """Indicates whether there is at least one more page with items after the ones returned in the current query."""
+  hasNextPage: Boolean!
+  """Indicates whether there is at least one more page with items before the ones returned in the current query."""
+  hasPreviousPage: Boolean!
+  """Cursor corresponding to the first possible item."""
+  startCursor: String!
+  """Cursor corresponding to the last possible item."""
+  endCursor: String!
+  """Total number of items (products or collections), not pages."""
+  totalCount: Int!
+}
+
+"""Input type for setting a new password."""
+input ISetPassword {
+  """The email of the user for whom the password is being set."""
+  email: String!
+  """The new password to be set for the user."""
+  newPassword: String!
+  """The current password of the user, required for verification before changing to the new password."""
+  currentPassword: String!
+  """Optional access key for the user, used in some authentication flows."""
+  accesskey: String
+  """Optional reCAPTCHA token for security verification."""
+  recaptcha: String
+}
+
+"""Response type for setting a new password."""
+type SetPasswordResponse {
+  """Indicates whether the password was successfully set."""
+  success: Boolean!
+  """Message providing additional information about the operation."""
+  message: String
+}
+
+"""Client profile data."""
+type StorePerson {
+  """Client ID."""
+  id: String!
+  """Client email."""
+  email: String!
+  """Client first name."""
+  givenName: String!
+  """Client last name."""
+  familyName: String!
+}
+
+"""Client profile data."""
+input IStorePerson {
+  """Client ID."""
+  id: String!
+  """Client email."""
+  email: String!
+  """Client first name."""
+  givenName: String!
+  """Client last name."""
+  familyName: String!
+}
+
+type PickupPointAddress {
+  """Address city."""
+  city: String
+  """Address neighborhood."""
+  neighborhood: String
+  """Address number."""
+  number: String
+  """Address postal code."""
+  postalCode: String
+  """Address street."""
+  street: String
+  """Address state."""
+  state: String
+}
+
+type BusinessHour {
+  """Number that represents the day of the week."""
+  dayOfWeek: Int
+  """Business hour opening time."""
+  openingTime: String
+  """Business hour closing time."""
+  closingTime: String
+}
+
+type PickupPointDistance {
+  """Pickup point ID."""
+  pickupId: String
+  """Pickup point distance."""
+  distance: Float
+  """Pickup point name."""
+  pickupName: String
+  """Whether the pickup point is active."""
+  isActive: Boolean
+  """Pickup point address."""
+  address: PickupPointAddress
+  """Pickup point business hours."""
+  businessHours: [BusinessHour]
+}
+
+type PickupPoints {
+  """List of pickup point distances for the given location."""
+  pickupPointDistances: [PickupPointDistance]
+  """Hash of the pickup points data."""
+  pickupPointsHash: String
+}
+
+"""Product information. Products are variants within product groups, equivalent to VTEX [SKUs](https://help.vtex.com/en/tutorial/what-is-an-sku--1K75s4RXAQyOuGUYKMM68u#). For example, you may have a **Shirt** product group with associated products such as **Blue shirt size L**, **Green shirt size XL** and so on."""
+type StoreProduct {
+  """Meta tag data."""
+  seo: StoreSeo!
+  """List of items consisting of chain linked web pages, ending with the current page."""
+  breadcrumbList: StoreBreadcrumbList!
+  """Corresponding collection URL slug, with which to retrieve this entity."""
+  slug: String!
+  """Product name."""
+  name: String!
+  """Product ID, such as [ISBN](https://www.isbn-international.org/content/what-isbn) or similar global IDs."""
+  productID: String!
+  """Product brand."""
+  brand: StoreBrand!
+  """Product description."""
+  description: String!
+  """Array of images."""
+  image(context: String = "generic", limit: Int = -1): [StoreImage!]!
+  """Aggregate offer information."""
+  offers: StoreAggregateOffer!
+  """Stock Keeping Unit. Merchant-specific ID for the product."""
+  sku: String!
+  """Global Trade Item Number."""
+  gtin: String!
+  """Array with review information."""
+  review: [StoreReview!]!
+  """Aggregate ratings data."""
+  aggregateRating: StoreAggregateRating!
+  """Indicates product group related to this product."""
+  isVariantOf: StoreProductGroup!
+  """Array of additional properties."""
+  additionalProperty: [StorePropertyValue!]!
+  """The product's release date. Formatted using https://en.wikipedia.org/wiki/ISO_8601"""
+  releaseDate: String!
+  """Sku Unit Multiplier"""
+  unitMultiplier: Float
+  """Advertisement information about the product."""
+  advertisement: Advertisement
+  """Indicates whether the product has specifications."""
+  hasSpecifications: Boolean
+  """Indicate the specifications of a product."""
+  skuSpecifications: [SkuSpecification!]!
+  """Indicate the specifications of a group of SKUs."""
+  specificationGroups: [SpecificationGroup!]!
+  """Delivery Promise product's badge."""
+  deliveryPromiseBadges: [DeliveryPromiseBadge]
+}
+
+type SkuSpecification {
+  field: SKUSpecificationField!
+  values: [SKUSpecificationValue!]!
+}
+
+type SKUSpecificationValue {
+  name: String!
+  id: String
+  fieldId: String
+  originalName: String
+}
+
+type SKUSpecificationField {
+  name: String!
+  originalName: String
+  id: String
+}
+
+type SpecificationGroup {
+  name: String!
+  originalName: String!
+  specifications: [Specification!]!
+}
+
+type Specification {
+  name: String!
+  originalName: String!
+  values: [String!]!
+}
+
+"""Product input. Products are variants within product groups, equivalent to VTEX [SKUs](https://help.vtex.com/en/tutorial/what-is-an-sku--1K75s4RXAQyOuGUYKMM68u#). For example, you may have a **Shirt** product group with associated products such as **Blue shirt size L**, **Green shirt size XL** and so on."""
+input IStoreProduct {
+  """Stock Keeping Unit. Merchant-specific ID for the product."""
+  sku: String!
+  """Product name."""
+  name: String!
+  """Array of product images."""
+  image: [IStoreImage!]!
+  """Custom Product Additional Properties."""
+  additionalProperty: [IStorePropertyValue!]
+}
+
+"""Product group information. Product groups are catalog entities that may contain variants. They are equivalent to VTEX [Products](https://help.vtex.com/en/tutorial/what-is-a-product--2zrB2gFCHyQokCKKE8kuAw#), whereas each variant is equivalent to a VTEX [SKU](https://help.vtex.com/en/tutorial/what-is-an-sku--1K75s4RXAQyOuGUYKMM68u#). For example, you may have a **Shirt** product group with associated products such as **Blue shirt size L**, **Green shirt size XL** and so on."""
+type StoreProductGroup {
+  """Array of variants related to product group. Variants are equivalent to VTEX [SKUs](https://help.vtex.com/en/tutorial/what-is-an-sku--1K75s4RXAQyOuGUYKMM68u#)."""
+  hasVariant: [StoreProduct!]!
+  """Product group ID."""
+  productGroupID: String!
+  """Product group name."""
+  name: String!
+  """Array of additional properties."""
+  additionalProperty: [StorePropertyValue!]!
+  """
+  Object containing data structures to facilitate handling different SKU
+  variant properties. Specially useful for implementing SKU selection 
+  components.
+  """
+  skuVariants: SkuVariants
+}
+
+type Profile {
+  """Collection of user's address"""
+  addresses: [ProfileAddress]
+}
+
+type ProfileAddress {
+  """ProfileAddress address name/id."""
+  addressName: String
+  """ProfileAddress address type."""
+  addressType: String
+  """ProfileAddress postal code."""
+  postalCode: String
+  """ProfileAddress city."""
+  city: String
+  """ProfileAddress state."""
+  state: String
+  """ProfileAddress country."""
+  country: String
+  """ProfileAddress street."""
+  street: String
+  """ProfileAddress number."""
+  number: String
+  """ProfileAddress neighborhood."""
+  neighborhood: String
+  """ProfileAddress complement."""
+  complement: String
+  """ProfileAddress reference."""
+  reference: String
+  """ProfileAddress receiver name."""
+  receiverName: String
+  """ProfileAddress geo coordinate."""
+  geoCoordinate: [Float]
+}
+
+"""Properties that can be associated with products and products groups."""
+type StorePropertyValue {
+  """Property id. This propert changes according to the content of the object."""
+  propertyID: String!
+  """Property value. May hold a string or the string representation of an object."""
+  value: ObjectOrString!
+  """Property name."""
+  name: String!
+  """Specifies the nature of the value"""
+  valueReference: ObjectOrString!
+}
+
+input IStorePropertyValue {
+  """Property id. This propert changes according to the content of the object."""
+  propertyID: String
+  """Property value. May hold a string or the string representation of an object."""
+  value: ObjectOrString!
+  """Property name."""
+  name: String!
+  """Specifies the nature of the value"""
+  valueReference: ObjectOrString!
+}
+
+"""Each product edge contains a `node`, with product information, and a `cursor`, that can be used as a reference for pagination."""
+type StoreProductEdge {
+  """Each product node contains the information of a product returned by the query."""
+  node: StoreProduct!
+  """Product cursor. Used as pagination reference."""
+  cursor: String!
+}
+
+"""Product connections, including pagination information and products returned by the query."""
+type StoreProductConnection {
+  """Product pagination information."""
+  pageInfo: StorePageInfo!
+  """Array with product connection edges, each containing a product and a corresponding cursor."""
+  edges: [StoreProductEdge!]!
+}
+
+"""Each collection edge contains a `node`, with product collection information, and a `cursor`, that can be used as a reference for pagination."""
+type StoreCollectionEdge {
+  """Each collection node contains the information of a product collection returned by the query."""
+  node: StoreCollection!
+  """Collection cursor. Used as pagination reference."""
+  cursor: String!
+}
+
+"""Collection connections, including pagination information and collections returned by the query."""
+type StoreCollectionConnection {
+  """Collection pagination information."""
+  pageInfo: StorePageInfo!
+  """Array with collection connection page edges, each containing a collection and a corresponding cursor.."""
+  edges: [StoreCollectionEdge!]!
+}
+
+"""Product search results sorting options."""
+enum StoreSort {
+  """Sort by price, from highest to lowest."""
+  price_desc
+  """Sort by price, from lowest to highest."""
+  price_asc
+  """Sort by orders, from highest to lowest."""
+  orders_desc
+  """Sort by name, in reverse alphabetical order."""
+  name_desc
+  """Sort by name, in alphabetical order."""
+  name_asc
+  """Sort by release date, from  highest to lowest."""
+  release_desc
+  """Sort by discount value, from highest to lowest."""
+  discount_desc
+  """Sort by product score, from highest to lowest."""
+  score_desc
+}
+
+"""Selected search facet input."""
+input IStoreSelectedFacet {
+  """Selected search facet key."""
+  key: String!
+  """Selected search facet value."""
+  value: String!
+}
+
+"""Search facet type."""
+enum StoreFacetType {
+  """Indicates boolean search facet."""
+  BOOLEAN
+  """Indicates range type search facet."""
+  RANGE
+}
+
+"""Suggestion term."""
+type StoreSuggestionTerm {
+  """The term."""
+  value: String!
+  """Its occurrences count."""
+  count: Int!
+}
+
+"""Suggestions information."""
+type StoreSuggestions {
+  """Array with suggestion terms."""
+  terms: [StoreSuggestionTerm!]!
+  """Array with suggestion products' information."""
+  products: [StoreProduct!]!
+}
+
+"""Search result."""
+type SearchMetadata {
+  """Indicates if the search term was misspelled."""
+  isTermMisspelled: Boolean!
+  """Logical operator used to run the search."""
+  logicalOperator: String!
+  """Indicates how the search engine corrected the misspelled word by using fuzzy logic."""
+  fuzzy: String
+}
+
+"""Search result."""
+type StoreSearchResult {
+  """Search result products."""
+  products: StoreProductConnection!
+  """Array of search result facets."""
+  facets: [StoreFacet!]!
+  """Search result suggestions."""
+  suggestions: StoreSuggestions!
+  """Search result metadata. Additional data can be used to send analytics events."""
+  metadata: SearchMetadata
+}
+
+input IGeoCoordinates {
+  """The latitude of the geographic coordinates."""
+  latitude: Float!
+  """The longitude of the geographic coordinates."""
+  longitude: Float!
+}
+
+type ProductCountResult {
+  """Total product count."""
+  total: Int!
+}
+
+type Query {
+  """Returns the details of a product based on the specified locator."""
+  product(
+    """An array of selected search facets."""
+    locator: [IStoreSelectedFacet!]!
+  ): StoreProduct! @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns the details of a collection based on the collection slug."""
+  collection(
+    """Collection slug."""
+    slug: String!
+  ): StoreCollection! @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns the result of a product, facet, or suggestion search."""
+  search(
+    """Search pagination argument, indicating how many results should be returned from the complete result list."""
+    first: Int!
+    """Search pagination argument, indicating the cursor corresponding with the item after which the results should be fetched."""
+    after: String
+    """Search results sorting mode."""
+    sort: StoreSort = score_desc
+    """Search term."""
+    term: String = ""
+    """Array of selected search facets."""
+    selectedFacets: [IStoreSelectedFacet!]
+    """Search advertisement products return in result."""
+    sponsoredCount: Int
+  ): StoreSearchResult! @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns information about all products."""
+  allProducts(
+    """Product pagination argument, indicating how many items should be returned from the complete result list."""
+    first: Int!
+    """Product pagination argument, indicating the cursor corresponding with the item after which the items should be fetched."""
+    after: String
+  ): StoreProductConnection! @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns information about selected products."""
+  products(productIds: [String!]!): [StoreProduct!]! @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns information about all collections."""
+  allCollections(
+    """Collection pagination argument, indicating how many items should be returned from the complete result list."""
+    first: Int!
+    """Collection pagination argument, indicating the cursor corresponding with the item after which the items should be fetched."""
+    after: String
+  ): StoreCollectionConnection! @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns information about shipping simulation."""
+  shipping(
+    """List of SKU products"""
+    items: [IShippingItem!]!
+    """Postal code to freight calculator"""
+    postalCode: String!
+    """Country of postal code"""
+    country: String!
+  ): ShippingData @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns if there's a redirect for a search."""
+  redirect(
+    """Search term."""
+    term: String
+    """Array of selected search facets."""
+    selectedFacets: [IStoreSelectedFacet!]
+  ): StoreRedirect
+  """Returns a list of sellers available for a specific localization."""
+  sellers(
+    """Postal code input to calculate sellers"""
+    postalCode: String
+    """Geocoordinates input to calculate sellers"""
+    geoCoordinates: IGeoCoordinates
+    """Country of localization"""
+    country: String!
+    """Sales channel of the navigation"""
+    salesChannel: String
+  ): SellersData @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns information about the profile."""
+  profile(
+    """Identifier for user."""
+    id: String!
+  ): Profile @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns the total product count information based on a specific location accessible through the VTEX segment cookie."""
+  productCount(
+    """Search term."""
+    term: String
+  ): ProductCountResult @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns information about the Details of an User Order."""
+  userOrder(
+    """Identifier for the order."""
+    orderId: String!
+  ): UserOrderResult @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns information about the list of Orders that the User can view."""
+  listUserOrders(
+    """Page number of the list of orders."""
+    page: Int
+    """Quantity of items per page of the list of orders."""
+    perPage: Int
+    """Status of the list of orders."""
+    status: [String]
+    """Initial date of the list of orders."""
+    dateInitial: String
+    """Final date of the list of orders."""
+    dateFinal: String
+    """Text used to full text filter of the list of orders."""
+    text: String
+    """Client email used to filter of the list of orders."""
+    clientEmail: String
+  ): UserOrderListMinimalResult @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns information about the current user details."""
+  userDetails: StoreUserDetails! @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns the account profile information for the current authenticated user (b2b or b2c user)."""
+  accountProfile: StoreAccountProfile! @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns the account name of the current user or the B2B contract name if applicable."""
+  accountName: String @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns information about the user validation."""
+  validateUser: ValidateUserData @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+  """Returns a list of pickup points near to the given geo coordinates."""
+  pickupPoints(
+    """Geo coordinates input."""
+    geoCoordinates: IStoreGeoCoordinates
+  ): PickupPoints @cacheControl(scope: "public", sMaxAge: 120, staleWhileRevalidate: 3600)
+}
+
+type ValidateUserData {
+  """Indicates if the user is valid."""
+  isValid: Boolean!
+}
+
+"""
+Redirect informations, including url returned by the query.
+https://schema.org/Thing
+"""
+type StoreRedirect {
+  """URL to redirect"""
+  url: String
+}
+
+"""Regionalization with sellers information."""
+type SellersData {
+  """Identification of region."""
+  id: String
+  """List of sellers."""
+  sellers: [SellerInfo]
+}
+
+"""Information of sellers."""
+type SellerInfo {
+  """Identification of the seller"""
+  id: String
+  """Name of the seller"""
+  name: String
+  """Logo of the seller"""
+  logo: String
+}
+
+"""User details information."""
+type StoreUserDetails {
+  """User's name."""
+  name: String
+  """User's email."""
+  email: String
+  """User's role."""
+  role: [String]
+  """User's organizational unit."""
+  orgUnit: String
+}
+
+"""Account profile information."""
+type StoreAccountProfile {
+  name: String
+  email: String
+  id: String
+}
+
+"""Information of a given review rating."""
+type StoreReviewRating {
+  """Rating value."""
+  ratingValue: Float!
+  """Best rating value."""
+  bestRating: Float!
+}
+
+"""Information of a given review."""
+type StoreReview {
+  """Review rating information."""
+  reviewRating: StoreReviewRating!
+  """Review author."""
+  author: StoreAuthor!
+}
+
+"""Search Engine Optimization (SEO) tags data."""
+type StoreSeo {
+  """Title tag."""
+  title: String!
+  """Title template tag."""
+  titleTemplate: String!
+  """Description tag."""
+  description: String!
+  """Canonical tag."""
+  canonical: String!
+}
+
+"""Currency information."""
+type StoreCurrency {
+  """Currency code (e.g: USD)."""
+  code: String!
+  """Currency symbol (e.g: $)."""
+  symbol: String!
+}
+
+input IStoreCurrency {
+  """Currency code (e.g: USD)."""
+  code: String!
+  """Currency symbol (e.g: $)."""
+  symbol: String!
+}
+
+"""Marketing information."""
+type StoreMarketingData {
+  utmCampaign: String
+  utmMedium: String
+  utmSource: String
+  utmiCampaign: String
+  utmiPart: String
+  utmiPage: String
+}
+
+input IStoreMarketingData {
+  utmCampaign: String
+  utmMedium: String
+  utmSource: String
+  utmiCampaign: String
+  utmiPart: String
+  utmiPage: String
+}
+
+"""Geographic coordinates information."""
+type StoreGeoCoordinates {
+  """The latitude of the geographic coordinates."""
+  latitude: Float!
+  """The longitude of the geographic coordinates."""
+  longitude: Float!
+}
+
+input IStoreGeoCoordinates {
+  """The latitude of the geographic coordinates."""
+  latitude: Float!
+  """The longitude of the geographic coordinates."""
+  longitude: Float!
+}
+
+"""Delivery window information."""
+type StoreDeliveryWindow {
+  """The delivery window start date information."""
+  startDate: String!
+  """The delivery window end date information."""
+  endDate: String!
+}
+
+"""Delivery window information."""
+input IStoreDeliveryWindow {
+  """The delivery window start date information."""
+  startDate: String!
+  """The delivery window end date information."""
+  endDate: String!
+}
+
+"""Delivery mode information."""
+type StoreDeliveryMode {
+  """The delivery channel information of the session."""
+  deliveryChannel: String!
+  """The delivery method information of the session."""
+  deliveryMethod: String!
+  """The delivery window information of the session."""
+  deliveryWindow: StoreDeliveryWindow
+}
+
+input IStoreDeliveryMode {
+  """The delivery channel information of the session."""
+  deliveryChannel: String!
+  """The delivery method information of the session."""
+  deliveryMethod: String!
+  """The delivery window information of the session."""
+  deliveryWindow: IStoreDeliveryWindow
+}
+
+"""Session information."""
+type StoreSession {
+  """Session locale."""
+  locale: String!
+  """Session currency."""
+  currency: StoreCurrency!
+  """Session country."""
+  country: String!
+  """Session channel."""
+  channel: String
+  """Session delivery mode."""
+  deliveryMode: StoreDeliveryMode
+  """Session address type."""
+  addressType: String
+  """Session city."""
+  city: String
+  """Session postal code."""
+  postalCode: String
+  """Session input geoCoordinates."""
+  geoCoordinates: StoreGeoCoordinates
+  """Session input person."""
+  person: StorePerson
+  """B2B Information."""
+  b2b: StoreB2B
+  """Marketing information."""
+  marketingData: StoreMarketingData
+  """Refresh token after Information."""
+  refreshAfter: String
+}
+
+type StoreB2B {
+  customerId: String!
+  isRepresentative: Boolean
+  unitName: String
+  unitId: String
+  firstName: String
+  lastName: String
+  userName: String
+  userEmail: String
+  savedPostalCode: String
+}
+
+input IStoreB2B {
+  customerId: String!
+  isRepresentative: Boolean
+  unitName: String
+  unitId: String
+  firstName: String
+  lastName: String
+  userName: String
+  userEmail: String
+  savedPostalCode: String
+}
+
+"""Session input."""
+input IStoreSession {
+  """Session input locale."""
+  locale: String!
+  """Session input currency."""
+  currency: IStoreCurrency!
+  """Session input country."""
+  country: String!
+  """Session input channel."""
+  channel: String
+  """Session input delivery mode."""
+  deliveryMode: IStoreDeliveryMode
+  """Session input address type."""
+  addressType: String
+  """Session input city."""
+  city: String
+  """Session input postal code."""
+  postalCode: String
+  """Session input geoCoordinates."""
+  geoCoordinates: IStoreGeoCoordinates
+  """Session input person."""
+  person: IStorePerson
+  """Session input b2b."""
+  b2b: IStoreB2B
+  """Marketing information input."""
+  marketingData: IStoreMarketingData
+  """Refresh token after Information."""
+  refreshAfter: String
+}
+
+"""Shipping Simulation item input."""
+input IShippingItem {
+  """ShippingItem ID / Sku."""
+  id: String!
+  """Number of items."""
+  quantity: Int!
+  """Seller responsible for the ShippingItem."""
+  seller: String!
+}
+
+"""Shipping Simulation information."""
+type ShippingData {
+  """List of LogisticsItem."""
+  items: [LogisticsItem]
+  """List of LogisticsInfo."""
+  logisticsInfo: [LogisticsInfo]
+  """List of MessageInfo."""
+  messages: [MessageInfo]
+  """Address information."""
+  address: Address
+}
+
+"""Shipping Simulation Logistic Item."""
+type LogisticsItem {
+  """LogisticsItem ID / Sku."""
+  id: String
+  requestIndex: Int
+  """Number of items."""
+  quantity: Int
+  """Seller responsible for the ShippingItem."""
+  seller: String
+  """List of Sellers."""
+  sellerChain: [String]
+  """LogisticsItem tax."""
+  tax: Int
+  """Next date in which price is scheduled to change. If there is no scheduled change, this will be set a year in the future from current time."""
+  priceValidUntil: String
+  """LogisticsItem price."""
+  price: Int
+  """LogisticsItem listPrice."""
+  listPrice: Int
+  """LogisticsItem rewardValue."""
+  rewardValue: Int
+  """LogisticsItem sellingPrice."""
+  sellingPrice: Int
+  """LogisticsItem measurementUnit."""
+  measurementUnit: String
+  """LogisticsItem unitMultiplier."""
+  unitMultiplier: Int
+  """LogisticsItem availability."""
+  availability: String
+}
+
+type LogisticsInfo {
+  """LogisticsInfo itemIndex."""
+  itemIndex: String
+  """LogisticsInfo selectedSla."""
+  selectedSla: String
+  """List of LogisticsInfo ShippingSLA."""
+  slas: [ShippingSLA]
+}
+
+type ShippingSLA {
+  """ShippingSLA id."""
+  id: String
+  """ShippingSLA name."""
+  name: String
+  """ShippingSLA price."""
+  price: Float
+  """ShippingSLA shipping estimate."""
+  shippingEstimate: String
+  """
+  ShippingSLA localized shipping estimate.
+  Note: this will always return a localized string for locale `en-US`.
+  """
+  localizedEstimates: String
+  """ShippingSLA available delivery windows."""
+  availableDeliveryWindows: [AvailableDeliveryWindows]
+  """ShippingSLA shipping estimate date."""
+  shippingEstimateDate: String
+  """List of ShippingSLA delivery ids."""
+  deliveryIds: [DeliveryIds]
+  """ShippingSLA delivery channel."""
+  deliveryChannel: String
+  """ShippingSLA friendly name."""
+  friendlyName: String
+  """ShippingSLA carrier."""
+  carrier: String
+  """ShippingSLA pickup point id."""
+  pickupPointId: String
+  """ShippingSLA pickup store info."""
+  pickupStoreInfo: PickupStoreInfo
+  """ShippingSLA pickup distance."""
+  pickupDistance: Float
+}
+
+type AvailableDeliveryWindows {
+  """Available delivery window start date in UTC"""
+  startDateUtc: String
+  """Available delivery window end date in UTC"""
+  endDateUtc: String
+  """Available delivery window price"""
+  price: Int
+  """Available delivery window list price"""
+  listPrice: Int
+  """Available delivery window tax"""
+  tax: Int
+}
+
+type DeliveryIds {
+  """DeliveryIds courier id"""
+  courierId: String
+  """DeliveryIds warehouse id"""
+  warehouseId: String
+  """DeliveryIds dock id"""
+  dockId: String
+  """DeliveryIds courier name"""
+  courierName: String
+  """DeliveryIds quantity"""
+  quantity: Int
+}
+
+type PickupStoreInfo {
+  """PickupStoreInfo friendly name."""
+  friendlyName: String
+  """PickupStoreInfo address."""
+  address: PickupAddress
+  """PickupStoreInfo additional information."""
+  additionalInfo: String
+  """PickupStoreInfo dock id."""
+  dockId: String
+  """Information if the store has pickup enable."""
+  isPickupStore: Boolean
+}
+
+type PickupAddress {
+  """PickupAddress address type."""
+  addressType: String
+  """PickupAddress receiver name."""
+  receiverName: String
+  """PickupAddress address id."""
+  addressId: String
+  """PickupAddress postal code."""
+  postalCode: String
+  """PickupAddress city."""
+  city: String
+  """PickupAddress state."""
+  state: String
+  """PickupAddress country."""
+  country: String
+  """PickupAddress street."""
+  street: String
+  """PickupAddress number."""
+  number: String
+  """PickupAddress neighborhood."""
+  neighborhood: String
+  """PickupAddress complement."""
+  complement: String
+  """PickupAddress reference."""
+  reference: String
+  """PickupAddress geo coordinates."""
+  geoCoordinates: [Float]
+}
+
+type MessageInfo {
+  """MessageInfo code."""
+  code: String
+  """MessageInfo text."""
+  text: String
+  """MessageInfo status."""
+  status: String
+  """MessageInfo fields."""
+  fields: MessageFields
+}
+
+type MessageFields {
+  """MessageFields item index."""
+  itemIndex: String
+  """MessageFields ean."""
+  ean: String
+  """MessageFields sku name."""
+  skuName: String
+}
+
+type SkuVariants {
+  """SKU property values for the current SKU."""
+  activeVariations: ActiveVariations
+  """All available options for each SKU variant property, indexed by their name."""
+  allVariantsByName: VariantsByName
+  """
+  Maps property value combinations to their respective SKU's slug. Enables
+  us to retrieve the slug for the SKU that matches the currently selected
+  variations in O(1) time.
+  If `dominantVariantName` is not present, the first variant will be 
+  considered the dominant one.
+  """
+  slugsMap(dominantVariantName: String): SlugsMap
+  """
+  Available options for each varying SKU property, taking into account the
+  `dominantVariantName` property. Returns all available options for the
+  dominant property, and only options that can be combined with its current
+  value for other properties.
+  If `dominantVariantName` is not present, the first variant will be 
+  considered the dominant one.
+  """
+  availableVariations(dominantVariantName: String): FormattedVariants
+  """All available options for each SKU variant property, indexed by their name."""
+  allVariantProducts: [StoreProduct!]
+}
+
+"""
+Example:
+
+```json
+{
+  'Color-Red-Size-40': 'classic-shoes-37'
+}
+```
+"""
+scalar SlugsMap
+
+"""
+Example:
+
+```json
+{
+  Color: 'Red', Size: '42'
+}
+```
+"""
+scalar ActiveVariations
+
+"""
+Example:
+
+```json
+{
+  Color: [ "Red", "Blue", "Green" ],
+  Size: [ "40", "41" ]
+}
+```
+"""
+scalar VariantsByName
+
+"""
+Example:
+
+```json
+{
+  Color: [
+    {
+      src: "https://storecomponents.vtexassets.com/...",
+      alt: "...",
+      label: "...",
+      value: "..."
+    },
+    {
+      src: "https://storecomponents.vtexassets.com/...",
+      alt: "...",
+      label: "...",
+      value: "..."
+    }
+  ],
+  Size: [
+    {
+      src: "https://storecomponents.vtexassets.com/...",
+      alt: "...",
+      label: "...",
+      value: "..."
+    }
+  ]
+}
+```
+"""
+scalar FormattedVariants
+
+"""Status used to indicate a message type. For instance, a shopping cart informative or error message."""
+enum StoreStatus {
+  INFO
+  WARNING
+  ERROR
+}
+
+scalar JSONObject
+
+type UserOrder {
+  orderId: String
+  sequence: String
+  marketplaceOrderId: String
+  marketplaceServicesEndpoint: String
+  sellerOrderId: String
+  origin: String
+  affiliateId: String
+  salesChannel: String
+  merchantName: String
+  status: String
+  workflowIsInError: Boolean
+  statusDescription: String
+  value: Float
+  creationDate: String
+  lastChange: String
+  orderGroup: String
+  giftRegistryData: String
+  marketingData: String
+  callCenterOperatorData: String
+  followUpEmail: String
+  lastMessage: String
+  hostname: String
+  invoiceData: String
+  changesAttachment: String
+  openTextField: String
+  roundingError: Int
+  orderFormId: String
+  commercialConditionData: String
+  isCompleted: Boolean
+  allowCancellation: Boolean
+  allowEdition: Boolean
+  isCheckedIn: Boolean
+  authorizedDate: String
+  invoicedDate: String
+  cancelReason: String
+  subscriptionData: String
+  taxData: String
+  checkedInPickupPointId: String
+  cancellationData: UserOrderCancellationData
+  cancellationRequests: [UserOrderCancellationRequest]
+  customData: UserOrderCustomData
+  clientPreferencesData: UserOrderClientPreferencesData
+  itemMetadata: UserOrderItemMetadata
+  marketplace: UserOrderMarketplace
+  storePreferencesData: UserOrderStorePreferencesData
+  sellers: [UserOrderStoreSellers]
+  packageAttachment: UserOrderPackageAttachment
+  paymentData: UserOrderPaymentData
+  shippingData: UserOrderShippingData
+  ratesAndBenefitsData: UserOrderRatesAndBenefitsData
+  clientProfileData: UserOrderClientProfileData
+  marketplaceItems: [UserOrderItems]
+  items: [UserOrderItems]
+  totals: [UserOrderTotals]
+  deliveryOptionsData: UserOrderDeliveryOptionsData
+  customFields: [UserOrderCustomFieldsGrouped]
+  canProcessOrderAuthorization: Boolean
+  ruleForAuthorization: ProcessOrderAuthorizationRule
+  purchaseAgentData: UserOrderPurchaseAgentData
+}
+
+type UserOrderPurchaseAgentData {
+  purchaseAgents: [UserOrderPurchaseAgent]
+}
+
+type UserOrderPurchaseAgent {
+  userId: String
+  versionId: String
+  persona: String
+  unitId: String
+}
+
+type UserOrderResult {
+  orderId: String
+  creationDate: String
+  status: String
+  canProcessOrderAuthorization: Boolean
+  statusDescription: String
+  allowCancellation: Boolean
+  storePreferencesData: UserOrderStorePreferencesData
+  clientProfileData: UserOrderClientProfileData
+  customData: UserOrderCustomData
+  customFields: [UserOrderCustomFieldsGrouped]
+  deliveryOptionsData: UserOrderDeliveryOptionsData
+  paymentData: UserOrderPaymentData
+  totals: [UserOrderTotals]
+  shippingData: UserOrderShippingData
+  items: [UserOrderItems]
+  ruleForAuthorization: ProcessOrderAuthorizationRule
+  shopper: UserOrderShopper
+}
+
+type UserOrderShopper {
+  firstName: String
+  lastName: String
+  email: String
+  phone: String
+}
+
+type UserOrderListResult {
+  list: [UserOrderFromList!]
+  paging: UserOrderListPaging
+  stats: UserOrderListStats
+  facets: [String]
+  reportRecordsLimit: Int
+}
+
+type UserOrderListPaging {
+  total: Int
+  pages: Int
+  currentPage: Int
+  perPage: Int
+}
+
+type UserOrderListStats {
+  stats: UserOrderListStatsData
+}
+
+type UserOrderListStatsData {
+  totalValue: UserOrderListStatsValue
+  totalItems: UserOrderListStatsValue
+}
+
+type UserOrderListStatsValue {
+  Count: Int
+  Max: Float
+  Mean: Float
+  Min: Float
+  Missing: Int
+  StdDev: Float
+  Sum: Float
+  SumOfSquares: Float
+  Facets: JSONObject
+}
+
+type UserOrderFromList {
+  orderId: String
+  creationDate: String
+  clientName: String
+  items: [UserOrderItemsSummarized]
+  totalValue: Float
+  paymentNames: String
+  status: String
+  statusDescription: String
+  marketPlaceOrderId: String
+  sequence: String
+  salesChannel: String
+  affiliateId: String
+  origin: String
+  workflowInErrorState: Boolean
+  workflowInRetry: Boolean
+  lastMessageUnread: String
+  ShippingEstimatedDate: String
+  ShippingEstimatedDateMax: String
+  ShippingEstimatedDateMin: String
+  orderIsComplete: Boolean
+  listId: String
+  listType: String
+  authorizedDate: String
+  callCenterOperatorName: String
+  totalItems: Int
+  currencyCode: String
+  hostname: String
+  invoiceOutput: [String]
+  invoiceInput: [String]
+  lastChange: String
+  isAllDelivered: Boolean
+  isAnyDelivered: Boolean
+  giftCardProviders: [String]
+  orderFormId: String
+  paymentApprovedDate: String
+  readyForHandlingDate: String
+  deliveryDates: [String]
+  customFields: [UserOrderFromListCustomFields]
+}
+
+type UserOrderCustomData {
+  customApps: [UserOrderCustomApp]
+  customFields: [UserOrderCustomField]
+}
+
+type UserOrderCustomApp {
+  fields: UserOrderFields
+  id: String
+  major: Int
+}
+
+type UserOrderFields {
+  cartEtag: String
+}
+
+type UserOrderStoreSellers {
+  id: String
+  name: String
+  logo: String
+  fulfillmentEndpoint: String
+}
+
+type UserOrderClientPreferencesData {
+  locale: String
+  optinNewsLetter: Boolean
+}
+
+type UserOrderItemMetadata {
+  Items: [UserOrderItemMetadataItem]
+}
+
+type UserOrderItemMetadataItem {
+  Id: String
+  Seller: String
+  Name: String
+  SkuName: String
+  ProductId: String
+  RefId: String
+  Ean: String
+  ImageUrl: String
+  DetailUrl: String
+  AssemblyOptions: [UserOrderAssemblyOptions]
+}
+
+type UserOrderAssemblyOptions {
+  Id: String
+  Name: String
+  Required: Boolean
+}
+
+type UserOrderOfferings {
+  type: String
+  id: String
+  name: String
+  price: Float
+}
+
+type UserOrderMarketplace {
+  baseURL: String
+  isCertified: String
+  name: String
+}
+
+type UserOrderCurrencyFormatInfo {
+  CurrencyDecimalDigits: Int
+  CurrencyDecimalSeparator: String
+  CurrencyGroupSeparator: String
+  CurrencyGroupSize: Int
+  StartsWithCurrencySymbol: Boolean
+}
+
+type UserOrderStorePreferencesData {
+  countryCode: String
+  currencyCode: String
+  currencyLocale: Int
+  currencySymbol: String
+  timeZone: String
+  currencyFormatInfo: UserOrderCurrencyFormatInfo
+}
+
+type UserOrderPackageAttachment {
+  packages: [UserOrderPackage]
+}
+
+type UserOrderPackage {
+  courier: String
+  courierStatus: UserOrderCourierStatus
+  invoiceNumber: String!
+  invoiceUrl: String
+  invoiceValue: Float!
+  extraValue: Float
+  issuanceDate: String
+  items: [UserOrderPackageItem!]
+  trackingNumber: String
+  trackingUrl: String
+  invoiceKey: String
+  type: UserOrderInvoiceType
+  restitutions: UserOrderRestitutions
+}
+
+type UserOrderCourierStatus {
+  data: [UserOrderTrackingInformation!]
+  finished: Boolean
+  status: String
+}
+
+type UserOrderTrackingInformation {
+  city: String
+  description: String
+  lastChange: String
+  state: String
+}
+
+enum UserOrderInvoiceType {
+  Input
+  Output
+}
+
+type UserOrderPackageItem {
+  description: String
+  itemIndex: Int
+  price: Int
+  quantity: Int
+}
+
+type UserOrderRestitutions {
+  Refund: UserOrderRestitutionOption
+  GiftCard: UserOrderRestitutionOption
+}
+
+type UserOrderRestitutionOption {
+  value: Float
+  items: [UserOrderRestitutionItem!]
+}
+
+type UserOrderRestitutionItem {
+  useFreight: Boolean
+  isCompensation: Boolean
+  compensationValue: Float
+  itemIndex: Int
+  id: ID
+  quantity: Int
+  price: Float
+  description: String
+  unitMultiplier: Float
+}
+
+type UserOrderPaymentConnectorResponses {
+  Tid: String
+  ReturnCode: String
+  Message: String
+  authId: String
+}
+
+type UserOrderPayments {
+  id: String
+  paymentSystem: String
+  paymentSystemName: String
+  value: Int
+  installments: Int
+  referenceValue: Int
+  cardHolder: String
+  cardNumber: String
+  firstDigits: String
+  lastDigits: String
+  cvv2: String
+  expireMonth: String
+  expireYear: String
+  url: String
+  giftCardId: String
+  giftCardName: String
+  giftCardCaption: String
+  redemptionCode: String
+  group: String
+  tid: String
+  dueDate: String
+  connectorResponses: UserOrderPaymentConnectorResponses
+  giftCardProvider: String
+  giftCardAsDiscount: String
+  koinUrl: String
+  accountId: String
+  parentAccountId: String
+  bankIssuedInvoiceIdentificationNumber: String
+  bankIssuedInvoiceIdentificationNumberFormatted: String
+  bankIssuedInvoiceBarCodeNumber: String
+  bankIssuedInvoiceBarCodeType: String
+  billingAddress: String
+  paymentOrigin: String
+}
+
+type UserOrderTransactions {
+  isActive: Boolean
+  transactionId: String
+  merchantName: String
+  payments: [UserOrderPayments]
+}
+
+type UserOrderPaymentData {
+  transactions: [UserOrderTransactions]
+  giftCards: [String]
+}
+
+type UserOrderPickupStoreInfo {
+  additionalInfo: String
+  address: UserOrderAddress
+  dockId: String
+  friendlyName: String
+  isPickupStore: Boolean
+}
+
+type UserOrderDeliveryChannels {
+  id: String
+  stockBalance: Int
+}
+
+type UserOrderDeliveryIds {
+  courierId: String
+  courierName: String
+  dockId: String
+  quantity: Int
+  warehouseId: String
+  accountCarrierName: String
+  kitItemDetails: [String]
+}
+
+type UserOrderDeliveryWindow {
+  startDateUtc: String
+  endDateUtc: String
+  price: Float
+}
+
+type UserOrderSlas {
+  id: String
+  name: String
+  shippingEstimate: String
+  shippingEstimateDate: String
+  deliveryWindow: UserOrderDeliveryWindow
+  listPrice: Float
+  price: Float
+  deliveryChannel: String
+  polygonName: String
+  lockTTL: String
+  pickupPointId: String
+  transitTime: String
+  pickupDistance: Int
+  pickupStoreInfo: UserOrderPickupStoreInfo
+  deliveryIds: [UserOrderDeliveryIds]
+  availableDeliveryWindows: [UserOrderDeliveryWindow]
+}
+
+type UserOrderLogisticsInfo {
+  itemIndex: Int
+  itemId: String
+  selectedDeliveryChannel: String
+  selectedSla: String
+  lockTTL: String
+  price: Float
+  listPrice: Float
+  sellingPrice: Float
+  deliveryWindow: UserOrderDeliveryWindow
+  deliveryCompany: String
+  shippingEstimate: String
+  shippingEstimateDate: String
+  deliveryChannel: String
+  addressId: String
+  versionId: String
+  entityId: String
+  polygonName: String
+  pickupPointId: String
+  transitTime: String
+  pickupStoreInfo: UserOrderPickupStoreInfo
+  deliveryChannels: [UserOrderDeliveryChannels]
+  deliveryIds: [UserOrderDeliveryIds]
+  shipsTo: [String]
+  slas: [UserOrderSlas]
+}
+
+type UserOrderAddress {
+  addressType: String
+  receiverName: String
+  addressId: String
+  versionId: String
+  entityId: String
+  postalCode: String
+  city: String
+  state: String
+  country: String
+  street: String
+  number: String
+  neighborhood: String
+  complement: String
+  reference: String
+  geoCoordinates: [Float]
+}
+
+type UserOrderShippingData {
+  id: String
+  trackingHints: String
+  contactInformation: [UserOrderContactInformation]
+  availableAddresses: [UserOrderAddress]
+  selectedAddresses: [UserOrderAddress]
+  logisticsInfo: [UserOrderLogisticsInfo]
+  address: UserOrderAddress
+}
+
+type UserOrderRatesAndBenefitsData {
+  id: String
+  rateAndBenefitsIdentifiers: [UserOrderRateAndBenefitsIdentifier]
+}
+
+type UserOrderRateAndBenefitsIdentifier {
+  id: ID
+  additionalInfo: String
+  description: String
+  featured: Boolean
+  name: String
+}
+
+type UserOrderClientProfileData {
+  id: String
+  email: String
+  firstName: String
+  lastName: String
+  documentType: String
+  document: String
+  phone: String
+  corporateName: String
+  tradeName: String
+  corporateDocument: String
+  stateInscription: String
+  corporatePhone: String
+  isCorporate: Boolean
+  userProfileId: String
+  userProfileVersion: String
+  customerClass: String
+  customerCode: String
+}
+
+type UserOrderSellingPrices {
+  value: Float
+  quantity: Int
+}
+
+type UserOrderPriceDefinition {
+  calculatedSellingPrice: Float
+  total: Float
+  reason: String
+  sellingPrices: [UserOrderSellingPrices]
+}
+
+type UserOrderDimension {
+  cubicweight: Float
+  height: Int
+  length: Int
+  weight: Int
+  width: Int
+}
+
+type UserOrderCategories {
+  id: Int
+  name: String
+}
+
+type UserOrderAdditionalInfo {
+  brandName: String
+  brandId: String
+  categoriesIds: String
+  productClusterId: String
+  commercialConditionId: String
+  offeringInfo: String
+  offeringType: String
+  offeringTypeId: String
+  dimension: UserOrderDimension
+  categories: [UserOrderCategories]
+}
+
+type UserOrderAttachmentOfferings {
+  name: String
+  required: Boolean
+}
+
+type UserOrderItemAttachment {
+  name: String
+}
+
+type UserOrderItems {
+  uniqueId: String
+  id: String
+  productId: String
+  ean: String
+  lockId: String
+  quantity: Int
+  seller: String
+  name: String
+  refId: String
+  price: Float
+  listPrice: Float
+  manualPrice: String
+  manualPriceAppliedBy: String
+  imageUrl: String
+  detailUrl: String
+  sellerSku: String
+  priceValidUntil: String
+  commission: Float
+  tax: Float
+  preSaleDate: String
+  measurementUnit: String
+  unitMultiplier: Float
+  sellingPrice: Float
+  isGift: Boolean
+  shippingPrice: String
+  rewardValue: Float
+  freightCommission: Float
+  taxCode: String
+  parentItemIndex: String
+  parentAssemblyBinding: String
+  callCenterOperator: String
+  serialNumbers: String
+  costPrice: Float
+  assemblies: [String]
+  priceDefinition: UserOrderPriceDefinition
+  additionalInfo: UserOrderAdditionalInfo
+  attachmentOfferings: [UserOrderAttachmentOfferings]
+  offerings: [UserOrderOfferings]
+  params: [String]
+  bundleItems: [UserOrderItems]
+  components: [UserOrderItems]
+  priceTags: [UserOrderPriceTag]
+  attachments: [UserOrderAttachments]
+  itemAttachment: UserOrderItemAttachment
+}
+
+type UserOrderItemsSummarized {
+  seller: String
+  quantity: Int
+  description: String
+  ean: String
+  refId: String
+  id: String
+  productId: String
+  sellingPrice: Float
+  price: Float
+}
+
+type UserOrderAttachments {
+  name: String
+  content: JSONObject
+}
+
+type UserOrderPriceTag {
+  name: String!
+  value: Float
+  rawValue: Float!
+  rate: Float
+  jurisCode: String
+  jurisType: String
+  jurisName: String
+  isPercentual: Boolean
+  identifier: String
+  owner: String
+}
+
+type UserOrderTotals {
+  id: String
+  name: String
+  value: Float
+}
+
+type UserOrderContactInformation {
+  id: ID!
+  email: String
+  firstName: String
+  lastName: String
+  document: String
+  documentType: String
+  phone: String
+}
+
+type UserOrderDeliveryOptionsData {
+  deliveryOptions: [UserOrderDeliveryOption]
+  contact: UserOrderDeliveryOptionsContact
+}
+
+type UserOrderDeliveryOption {
+  selectedSla: String
+  deliveryChannel: String
+  deliveryCompany: String
+  deliveryWindow: UserOrderDeliveryWindow
+  shippingEstimate: String
+  shippingEstimateDate: String
+  friendlyShippingEstimate: String
+  friendlyDeliveryOptionName: String
+  seller: String
+  address: UserOrderAddress
+  pickupStoreInfo: UserOrderPickupStoreInfo
+  quantityOfDifferentItems: Int
+  total: Int
+  items: [UserOrderDeliveryOptionsItems]
+}
+
+type UserOrderDeliveryOptionsItems {
+  id: String
+  uniqueId: String
+  name: String
+  quantity: Int
+  price: Float
+  imageUrl: String
+  tax: Float
+  total: Float
+}
+
+type UserOrderDeliveryOptionsContact {
+  name: String
+  email: String
+  phone: String
+}
+
+type UserOrderCancel {
+  data: String
+}
+
+"""Input to the cancel order API."""
+input IUserOrderCancel {
+  """Person's name."""
+  orderId: String!
+  """Customer's email."""
+  customerEmail: String
+  """Reason."""
+  reason: String
+}
+
+type UserOrderCancellationData {
+  RequestedByUser: Boolean
+  RequestedBySystem: Boolean
+  RequestedBySellerNotification: Boolean
+  RequestedByPaymentNotification: Boolean
+  Reason: String
+  CancellationDate: String
+}
+
+type UserOrderCancellationRequest {
+  id: String
+  reason: String
+  cancellationRequestDate: String
+  requestedByUser: Boolean
+  deniedBySeller: Boolean
+  deniedBySellerReason: String
+  cancellationRequestDenyDate: String
+}
+
+type UserOrderCustomField {
+  linkedEntity: UserOrderCustomFieldLinkedEntity!
+  fields: [UserOrderCustomFieldField!]!
+}
+
+type UserOrderCustomFieldLinkedEntity {
+  type: String!
+  id: String
+}
+
+type UserOrderCustomFieldField {
+  name: String!
+  value: String!
+  refId: String
+}
+
+type UserOrderCustomFieldsGrouped {
+  type: String!
+  id: String
+  fields: [UserOrderCustomFieldField]
+}
+
+type UserOrderFromListCustomFields {
+  type: String
+  value: [String]
+}
+
+type UserOrderListMinimalResult {
+  list: [UserOrderFromListMinimal]
+  paging: UserOrderListPaging
+}
+
+type UserOrderFromListMinimal {
+  orderId: String
+  creationDate: String
+  clientName: String
+  items: [UserOrderItemsSummarized]
+  totalValue: Float
+  status: String
+  statusDescription: String
+  ShippingEstimatedDate: String
+  customFields: [UserOrderFromListCustomFields]
+  currencyCode: String
+}
