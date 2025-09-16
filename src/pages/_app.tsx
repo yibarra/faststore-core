@@ -5,6 +5,8 @@ import { useRouter } from 'next/router'
 
 import { useSearch } from '@faststore/sdk'
 import { UIProvider } from '@faststore/ui'
+import { Button } from '@soma-vertical-web/core-components'
+import { contexts } from '@soma-vertical-web/multi-lib'
 
 import ThirdPartyScripts from 'src/components/ThirdPartyScripts'
 import Layout from 'src/Layout'
@@ -28,6 +30,8 @@ function App({ Component, pageProps }: AppProps) {
   // Initialize global Search state
   startGlobalSearchState(router.asPath, { itemsPerPage: ITEMS_PER_PAGE })
 
+  console.info(contexts, 'CONTEXT MULTI-LIB')
+
   return (
     <ErrorBoundary>
       <Head> {!process.env.DISABLE_3P_SCRIPTS && <ThirdPartyScripts />}</Head>
@@ -37,6 +41,10 @@ function App({ Component, pageProps }: AppProps) {
 
       <UIProvider>
         <DeliveryPromiseProvider>
+          
+
+          <Button size="x-large" variant="primary">BUTTON TEST</Button>
+
           <Layout>
             <Component {...pageProps} key={pageProps?.key} />
           </Layout>

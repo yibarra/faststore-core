@@ -1,0 +1,24 @@
+:root {
+  /* Colores */
+  --soma-color-primary: #007bff;
+  --soma-color-secondary: #6c757d;
+  --soma-color-text: #212529;
+  --soma-color-background: #ffffff;
+
+  /* Tipografía */
+  --soma-font-family-body: 'Arial', sans-serif;
+  --soma-font-family-heading: 'Georgia', serif;
+  --soma-font-size-base: 16px;
+  --soma-font-size-large: 20px;
+  --soma-line-height-base: 1.5;
+
+  /* Espaciado */
+  --soma-spacing-small: 8px;
+  --soma-spacing-medium: 16px;
+  --soma-spacing-large: 24px;
+  --soma-spacing-xl: 32px;
+
+  /* Bordes y sombras */
+  --soma-border-radius-base: 4px;
+  --soma-box-shadow-base: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
